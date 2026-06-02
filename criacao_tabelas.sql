@@ -20,7 +20,7 @@ create table mecanica.estado (
 create table mecanica.cidade (
     id_cidade serial primary key,
     nome varchar(100) not null,
-    id_estado integer not null references mecanica.estado(id_estado),
+    id_estado integer not null references mecanica.estado(id_estado) ON DELETE RESTRICT,
     unique(nome, id_estado)
 );
 
@@ -32,31 +32,31 @@ create table mecanica.pessoa (
     numero varchar(10) not null,
     bairro varchar(50) not null,
     cep varchar(8) not null,
-    id_cidade integer not null references mecanica.cidade(id_cidade)
+    id_cidade integer not null references mecanica.cidade(id_cidade) ON DELETE RESTRICT
 );
 
 create table mecanica.telefones (
     id_telefone Serial primary key,
-    cpf_pessoa varchar(11) not null references mecanica.pessoa(cpf),
+    cpf_pessoa varchar(11) not null references mecanica.pessoa(cpf) ON DELETE CASCADE,
     telefone varchar(20) not null,
     unique(cpf_pessoa, telefone)
 );
 
 create table mecanica.funcionario(  
-    cpf_funcionario varchar(11) primary key references mecanica.pessoa(cpf),
+    cpf_funcionario varchar(11) primary key references mecanica.pessoa(cpf) ON DELETE RESTRICT,
     salario_base numeric(10,2) not null check (salario_base > 0)
 ) ;
 
 create table mecanica.atendente(  
-    cpf_atendente varchar(11) primary key references mecanica.funcionario(cpf_funcionario)
+    cpf_atendente varchar(11) primary key references mecanica.funcionario(cpf_funcionario) ON DELETE RESTRICT
 ) ;
 
 create table mecanica.mecanico(  
-    cpf_mecanico varchar(11) primary key references mecanica.funcionario(cpf_funcionario)
+    cpf_mecanico varchar(11) primary key references mecanica.funcionario(cpf_funcionario) ON DELETE RESTRICT
 ) ;
 
 create table mecanica.cliente(
-    cpf_cliente varchar(11) primary key references mecanica.pessoa(cpf),
+    cpf_cliente varchar(11) primary key references mecanica.pessoa(cpf) ON DELETE RESTRICT,
     data_cadastro timestamp not null default now()
 ) ;
 
@@ -106,7 +106,7 @@ create table mecanica.ordem_servico(
     data_abertura date not null default current_date,
     status_os mecanica.status_os not null default 'Orcamento',
     cpf_atendente varchar(11) not null references mecanica.atendente(cpf_atendente),
-    placa_veiculo varchar(10) references mecanica.veiculo(placa),
+    placa_veiculo varchar(10) references mecanica.veiculo(placa) ON DELETE SET NULL,
     constraint chk_data_estimada check (data_estimada >= data_abertura),
     constraint chk_data_fechamento check (data_fechamento is null or data_fechamento >= data_abertura),
     constraint chk_regra_negocio_os check (
@@ -127,7 +127,7 @@ create table mecanica.ordem_pagamento (
 
 create table mecanica.ordem_servico_peca (
     id_item_peca serial primary key,
-    codigo_os integer not null references mecanica.ordem_servico(codigo_os),
+    codigo_os integer not null references mecanica.ordem_servico(codigo_os) ON DELETE CASCADE,
     codigo_peca integer not null references mecanica.peca(codigo_peca),
     quantidade_requisitada smallint not null check (quantidade_requisitada > 0),
     valor_unitario_cobrado numeric(10,2) not null check (valor_unitario_cobrado > 0),
@@ -136,14 +136,14 @@ create table mecanica.ordem_servico_peca (
 
 create table mecanica.item_os_servico (
     id_item serial primary key,
-    codigo_os integer not null references mecanica.ordem_servico(codigo_os),
+    codigo_os integer not null references mecanica.ordem_servico(codigo_os) ON DELETE CASCADE,
     codigo_servico integer not null references mecanica.servico(codigo_servico),
     valor_cobrado numeric(10,2) not null check (valor_cobrado > 0),
     unique(codigo_os, codigo_servico)
 );
 
 create table mecanica.rateio_mecanico_servico (
-    id_item integer not null references mecanica.item_os_servico(id_item),
+    id_item integer not null references mecanica.item_os_servico(id_item) ON DELETE CASCADE,
     cpf_mecanico varchar(11) not null references mecanica.mecanico(cpf_mecanico),
     primary key (id_item, cpf_mecanico),
     percentual_rateio numeric(5,2) not null check (percentual_rateio > 0 and percentual_rateio <= 100)
@@ -151,12 +151,12 @@ create table mecanica.rateio_mecanico_servico (
 
 create table mecanica.garantia_servico (
     id_garantia serial primary key,
-    id_item integer not null references mecanica.item_os_servico(id_item),
+    id_item integer not null references mecanica.item_os_servico(id_item) ON DELETE RESTRICT,
     data_inicio date not null,
     data_fim date not null check(data_fim > data_inicio),
     km_inicio int not null,
     km_fim int not null check(km_fim >= km_inicio),
     utilizada boolean not null default false,
     data_utilizacao date,
-    os_retorno integer references mecanica.ordem_servico(codigo_os)
+    os_retorno integer references mecanica.ordem_servico(codigo_os) ON DELETE SET NULL
 );
