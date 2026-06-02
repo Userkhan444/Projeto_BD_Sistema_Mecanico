@@ -105,7 +105,6 @@ create table mecanica.ordem_servico(
     prioridade mecanica.prioridade not null default 'Normal',
     data_abertura date not null default current_date,
     status_os mecanica.status_os not null default 'Orcamento',
-    valor_total numeric(10,2) default 0.00 check (valor_total >= 0),
     cpf_atendente varchar(11) not null references mecanica.atendente(cpf_atendente),
     placa_veiculo varchar(10) references mecanica.veiculo(placa),
     constraint chk_data_estimada check (data_estimada >= data_abertura),
