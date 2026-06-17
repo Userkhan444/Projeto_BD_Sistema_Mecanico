@@ -170,3 +170,4 @@ INNER JOIN mecanica.vw_faturamento_os f  ON f.codigo_os    = os.codigo_os
 WHERE g.utilizada = false
   AND g.data_fim >= CURRENT_DATE
 ORDER BY g.data_fim;
+
